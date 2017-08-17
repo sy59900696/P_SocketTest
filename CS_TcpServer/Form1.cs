@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace CS_SocketServer
+namespace CS_TcpServer
 {
     public partial class Form1 : Form
     {
@@ -73,17 +73,19 @@ namespace CS_SocketServer
             try
             {
                 Socket _clientSocket = (Socket)obj;
-                while (_clientSocket.Connected)
-                { 
+                while (_clientSocket.Connected && m_IsRun)
+                {
                     try
                     {
                         byte[] _buffer = new byte[1024];
                         int _iReceiveCount = _clientSocket.Receive(_buffer);
+                        if (_iReceiveCount <=0)
+                        {
+                            break;
+                        }
                         //接收后，拆解数据，格式不合法则抛出异常。
                         string _sResult = Encoding.UTF8.GetString(_buffer, 0, _iReceiveCount);
                         M_Logger(string.Format("接收客户端=【{0}】\t消息=【{1}】", _clientSocket.RemoteEndPoint.ToString(), _sResult));
-                        {
-                        }
                         _clientSocket.Send(Encoding.UTF8.GetBytes(_sResult));
                         M_Logger("反馈完成。");
                         m_i收发计数++;
@@ -91,7 +93,7 @@ namespace CS_SocketServer
                     catch (Exception ex)
                     {
                         M_Logger(string.Format("Receive()反馈时异常：{0}", ex.Message.ToString()));
-                    } 
+                    }
                 }
                 _clientSocket.Shutdown(SocketShutdown.Both);
                 _clientSocket.Close();
