@@ -73,28 +73,28 @@ namespace CS_SocketServer
             try
             {
                 Socket _clientSocket = (Socket)obj;
-                while (_clientSocket.Connected)
-                { 
-                    try
+                try
+                {
+                    byte[] _buffer = new byte[1024];
+                    int _iReceiveCount = _clientSocket.Receive(_buffer);
+                    //接收后，拆解数据，格式不合法则抛出异常。
+                    string _sResult = Encoding.UTF8.GetString(_buffer, 0, _iReceiveCount);
+                    M_Logger(string.Format("接收客户端=【{0}】\t消息=【{1}】", _clientSocket.RemoteEndPoint.ToString(), _sResult));
                     {
-                        byte[] _buffer = new byte[1024];
-                        int _iReceiveCount = _clientSocket.Receive(_buffer);
-                        //接收后，拆解数据，格式不合法则抛出异常。
-                        string _sResult = Encoding.UTF8.GetString(_buffer, 0, _iReceiveCount);
-                        M_Logger(string.Format("接收客户端=【{0}】\t消息=【{1}】", _clientSocket.RemoteEndPoint.ToString(), _sResult));
-                        {
-                        }
-                        _clientSocket.Send(Encoding.UTF8.GetBytes(_sResult));
-                        M_Logger("反馈完成。");
-                        m_i收发计数++;
                     }
-                    catch (Exception ex)
-                    {
-                        M_Logger(string.Format("Receive()反馈时异常：{0}", ex.Message.ToString()));
-                    } 
+                    _clientSocket.Send(Encoding.UTF8.GetBytes(_sResult));
+                    M_Logger("反馈完成。");
+                    m_i收发计数++;
                 }
-                _clientSocket.Shutdown(SocketShutdown.Both);
-                _clientSocket.Close();
+                catch (Exception ex)
+                {
+                    M_Logger(string.Format("Receive()反馈时异常：{0}", ex.Message.ToString()));
+                }
+                finally
+                {
+                    _clientSocket.Shutdown(SocketShutdown.Both);
+                    _clientSocket.Close();
+                }
             }
             catch (Exception ex)
             {
