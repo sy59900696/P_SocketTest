@@ -15,7 +15,20 @@ namespace StaticCode
         /// </summary> 
         public int m_iState = 0;
 
-        public string m_sClientID = "DDDDD00001";
+        private string _sClientID = "";
+
+        public string m_sClientID
+        {
+            get
+            {
+                return _sClientID;
+            }
+            set
+            {
+                _sClientID = value;
+                m_MsgToClient.m_sClientID = value;
+            }
+        }// = "DDDDD00000";
 
         public string m_sCar = "";
 
@@ -50,7 +63,7 @@ namespace StaticCode
 
     public class C_MsgToClient
     {
-        public string m_sClientID = "0000000000";
+        public string m_sClientID = "";
 
         /// <summary>
         /// 00000:空;  00001:开启充电; 00002:停止充电

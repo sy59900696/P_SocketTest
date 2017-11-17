@@ -15,7 +15,20 @@ namespace StaticCode
         /// </summary> 
         public int m_iState = 0;
 
-        public string m_sClientID = "DDDDD00001";
+        private string _sClientID = "";
+
+        public string m_sClientID
+        {
+            get
+            {
+                return _sClientID;
+            }
+            set
+            {
+                _sClientID = value;
+                m_MsgToClient.m_sClientID = value;
+            }
+        }// = "DDDDD00000";
 
         public string m_sCar = "";
 
@@ -23,7 +36,10 @@ namespace StaticCode
 
         public C_MsgToServer()
         {
-            m_MsgToClient.m_sClientID = m_sClientID;
+        }
+        public C_MsgToServer(string sClientID)
+        {
+            m_sClientID = sClientID;
         }
 
         public override string ToString()
@@ -50,7 +66,7 @@ namespace StaticCode
 
     public class C_MsgToClient
     {
-        public string m_sClientID = "0000000000";
+        public string m_sClientID = "";
 
         /// <summary>
         /// 00000:空;  00001:开启充电; 00002:停止充电
@@ -61,7 +77,7 @@ namespace StaticCode
         public C_MsgToClient Copy(C_MsgToClient _c1)
         {
             m_sCmd = _c1.m_sCmd;
-            m_sPrice = _c1.m_sPrice; 
+            m_sPrice = _c1.m_sPrice;
             return this;
         }
 
@@ -69,5 +85,12 @@ namespace StaticCode
         {
             return JsonConvert.SerializeObject(this);
         }
+    }
+
+    public class C_Msg
+    {
+        public int m_iCode = 0;
+        public string m_sMessage = "";
+        public string m_sResult = "";
     }
 }
