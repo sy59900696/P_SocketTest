@@ -16,7 +16,7 @@ using Newtonsoft.Json;
 
 namespace CS_CDClient
 {
-    public partial class Form1 : Form
+    public partial class Form_All : Form
     {
         public string m_sIP = "127.0.0.1";
         public int m_iPort = 8888;
@@ -24,15 +24,17 @@ namespace CS_CDClient
         private bool m_IsRun = true;
         private int m_i线程数 = 0;
         private int m_i单个线程循环间隔 = 0;
+        private int m_iCount = 0;
+        private int m_iCntError = 0;
 
         private C_MsgToServer m_MsgToServer1 = new C_MsgToServer();
-        bool m_Is用户点击了桩的停止键 = false;
+        private List<C_MsgToServer> m_lstMsgToServer1 = new List<C_MsgToServer>(); 
 
-        int m_iCount = 0;
+        bool m_Is用户点击了桩的停止键 = false; 
 
         private BackgroundWorker m_bgw0 = new BackgroundWorker();
 
-        public Form1()
+        public Form_All()
         {
             InitializeComponent();
             m_bgw0.WorkerSupportsCancellation = true;
@@ -64,9 +66,9 @@ namespace CS_CDClient
                         M_SendCmd(m_MsgToServer1.ToString());
                     }
                     else if (m_MsgToServer1.m_iState == 2)
-                    { 
+                    {
                         Logger.Debug("进入m_MsgToServer1.m_iState == 2 的处理。先停止设备服务。");
-                        M_停止给车充电(); 
+                        M_停止给车充电();
                         m_MsgToServer1.m_iState = 3;
                         M_SendCmd(m_MsgToServer1.ToString());
                     }
@@ -106,41 +108,42 @@ namespace CS_CDClient
 
         public void M_SendCmd(object _obj)
         {
-            Socket m_ClientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            m_ClientSocket.ReceiveTimeout = 10000;
-            m_ClientSocket.SendTimeout = 10000;
-            string _sCmd = _obj.ToString();
+            Socket _socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            _socket.ReceiveTimeout = 10000;
+            _socket.SendTimeout = 10000;
+            C_MsgToServer _MsgToServer1 = _obj as C_MsgToServer;
+            //string _sCmd = _obj.ToString();
 
             try
             {
                 IPEndPoint _EndPoint = new IPEndPoint(IPAddress.Parse(m_sIP), m_iPort);
-                byte[] _byteSend = Encoding.UTF8.GetBytes(_sCmd);
+                byte[] _byteSend = Encoding.UTF8.GetBytes(_MsgToServer1.ToString());
                 //M_Logger(string.Format("向IP=【{0}:{1}】发送消息【{2}】准备发送。", m_sIP, m_iPort, _sCmd));
-                m_ClientSocket.SendTo(_byteSend, _byteSend.Length, SocketFlags.None, _EndPoint);
+                _socket.SendTo(_byteSend, _byteSend.Length, SocketFlags.None, _EndPoint);
                 Logger.Debug(string.Format("发送完成。进入接收。"));
 
                 byte[] _buffer = new byte[1024];
                 EndPoint _EndPointRemote = new IPEndPoint(IPAddress.Any, 0) as EndPoint;
-                int _iReceiveCount = m_ClientSocket.ReceiveFrom(_buffer, ref _EndPointRemote);
+                int _iReceiveCount = _socket.ReceiveFrom(_buffer, ref _EndPointRemote);
                 IPEndPoint _ipEndPoint2 = ((IPEndPoint)_EndPointRemote);
 
                 string _sReturn = Encoding.UTF8.GetString(_buffer, 0, _iReceiveCount);
-                M_Logger(string.Format("向IP=【{0}:{1}】发送消息【{2}】成功。收到Server=【{3}:{4}】返回值【{5}】，。", m_sIP, m_iPort, _sCmd, _ipEndPoint2.Address.ToString(), _ipEndPoint2.Port, _sReturn));
+                Logger.Debug(string.Format("向IP=【{0}:{1}】发送消息【{2}】成功。收到Server=【{3}:{4}】返回值【{5}】，。", m_sIP, m_iPort, _MsgToServer1.ToString(), _ipEndPoint2.Address.ToString(), _ipEndPoint2.Port, _sReturn));
 
                 C_MsgToClient _msg2Client = JsonConvert.DeserializeObject<C_MsgToClient>(_sReturn);
-                M_Logger(string.Format("接收服务端=【{0}:{1}】\t解析OK", _ipEndPoint2.Address.ToString(), _ipEndPoint2.Port));
-                m_MsgToServer1.m_MsgToClient.Copy(_msg2Client);
+                Logger.Debug(string.Format("接收服务端=【{0}:{1}】\t解析OK", _ipEndPoint2.Address.ToString(), _ipEndPoint2.Port));
+                _MsgToServer1.m_MsgToClient.Copy(_msg2Client);
 
                 if (_msg2Client.m_sCmd == "00001")//收到开始指令
                 {
                     Logger.Debug("收到【开始指令】了。");
                     if (ckbx_枪连接OK.Checked)
                     {
-                        m_MsgToServer1.m_iState = 1;
+                        _MsgToServer1.m_iState = 1;
                     }
                     else
                     {
-                        m_MsgToServer1.m_iState = 4;
+                        _MsgToServer1.m_iState = 4;
                     }
                     this.Invoke(new Action(() =>
                     {
@@ -149,25 +152,27 @@ namespace CS_CDClient
                 else if (_msg2Client.m_sCmd == "00002")//收到停止指令
                 {
                     Logger.Debug("收到【停止指令】了。");
-                    m_MsgToServer1.m_iState = 2;
+                    _MsgToServer1.m_iState = 2;
                 }
-                else if (_msg2Client.m_sCmd == "00000" && m_MsgToServer1.m_iState == 5)//收到停止指令
+                else if (_msg2Client.m_sCmd == "00000" && _MsgToServer1.m_iState == 5)//收到停止指令
                 {
-                    m_MsgToServer1.m_iState = 3;
+                    _MsgToServer1.m_iState = 3;
                     //收到其他指令，不需要做任何处理。
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error(string.Format("向IP=【{0}:{1}】发送消息【{2}】异常：{3}", m_sIP, m_iPort, _sCmd, ex.Message.ToString()));
+                m_iCntError++;
+                Logger.Debug(string.Format("m_iCntError={0}", m_iCntError));
+                Logger.Error(string.Format("向IP=【{0}:{1}】发送消息【{2}】异常：{3}", m_sIP, m_iPort, _MsgToServer1.ToString(), ex.Message.ToString()));
                 Thread.Sleep(1000);//连接服务器异常了，就先停一停。
             }
             finally
             {
-                if (m_ClientSocket != null)
+                if (_socket != null)
                 {
-                    m_ClientSocket.Close();
-                    m_ClientSocket.Dispose();
+                    _socket.Close();
+                    _socket.Dispose();
                 }
             };
         }
@@ -177,7 +182,7 @@ namespace CS_CDClient
             bool _IsOk = true;
             if ( m_iCount % 100 == 99) _IsOk = false;
             if (m_iCount > 50 && m_iCount < 100) _IsOk = false;
-            M_Logger(_IsOk ? "自检成功。" : "自检发现故障。");
+            Logger.Debug(_IsOk ? "自检成功。" : "自检发现故障。");
             Thread.Sleep(100);
             return _IsOk;
         }
@@ -218,23 +223,7 @@ namespace CS_CDClient
                 lbl_Msg2Client.Text = m_MsgToServer1.m_MsgToClient.ToString();
                 lbl_Msg2Server.Text = m_MsgToServer1.ToString();
             }));
-        }
-
-        private void btn_单条发送_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                M_Logger("btn_单条发送_Click()");
-                m_sIP = IPAddress.Parse(txt_IP.Text).ToString();
-                m_iPort = int.Parse(txt_端口.Text);
-                M_Send(txt_Msg.Text);
-                M_Logger("btn_单条发送_Click()完成。");
-            }
-            catch (Exception ex)
-            {
-                M_Logger(string.Format("btn_单条发送_Click()异常：{0}", ex.Message.ToString()));
-            }
-        }
+        } 
 
         private void btn_循环发送_Click(object sender, EventArgs e)
         {
@@ -260,7 +249,10 @@ namespace CS_CDClient
                 //启动线程。
                 foreach (Thread _t0 in m_lstThread)
                 {
-                    _t0.Start(_t0.Name);
+                    C_MsgToServer _msg0 = new C_MsgToServer();
+                    _msg0.m_sClientID = _t0.Name;
+                    m_lstMsgToServer1.Add(_msg0);
+                    _t0.Start(_msg0);
                 }
 
                 M_Logger("btn_循环发送_Click()完成。");
@@ -274,69 +266,54 @@ namespace CS_CDClient
 
         private void M_循环发送(object _obj)
         {
-            string _sID = _obj.ToString();
-            for (int i = 0; i < 99999999 && m_IsRun; i++)
+            C_MsgToServer _MsgToServer1 = _obj as C_MsgToServer;
+            while (true)
             {
                 try
                 {
-                    M_Send(string.Format("[{0}]\t{1}", _sID, i));
-                    Thread.Sleep(m_i单个线程循环间隔);
+                    Logger.Debug(string.Format("第{0}次循环。。。", m_iCount));
+
+                    if (m_Is用户点击了桩的停止键)
+                    {
+                        _MsgToServer1.m_iState = 5;
+                        M_SendCmd(_MsgToServer1);
+                        m_Is用户点击了桩的停止键 = false;
+                    }
+                    else if (_MsgToServer1.m_iState == 5)
+                    {
+                        M_SendCmd(_MsgToServer1);
+                    }
+                    else if (_MsgToServer1.m_iState == 2)
+                    {
+                        Logger.Debug("进入m_MsgToServer1.m_iState == 2 的处理。先停止设备服务。");
+                        M_停止给车充电();
+                        _MsgToServer1.m_iState = 3;
+                        M_SendCmd(_MsgToServer1);
+                    }
+
+                    if (M_Do自检())
+                    {
+                        if (_MsgToServer1.m_iState == 0)
+                            _MsgToServer1.m_iState = 3;
+                    }
+                    else
+                    {
+                        _MsgToServer1.m_iState = 0;
+                    }
+
+                    _MsgToServer1.m_sCar = ckbx_枪连接OK.Checked ? "车辆信息XXXX" : "";
+
+                    M_SendCmd(_MsgToServer1);
                 }
                 catch (Exception ex)
                 {
-                    M_Logger(string.Format("M_循环发送()异常：{0}", ex.Message.ToString()));
+                    Logger.Debug(string.Format("M_bgw0_DoWork()循环异常：{0}", ex.Message.ToString()));
                 }
+                //M_刷新桩界面();
+                Thread.Sleep(1000);
             }
         }
-
-        public void M_Send(object _obj)
-        {
-            Socket m_ClientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            m_ClientSocket.ReceiveTimeout = 1000;
-            m_ClientSocket.SendTimeout = 1000;
-            string _sCmd = _obj.ToString();
-            try
-            {
-                IPEndPoint _EndPoint = new IPEndPoint(IPAddress.Parse(m_sIP), m_iPort);
-                byte[] _byteSend = Encoding.UTF8.GetBytes(_sCmd);
-                Logger.Debug(string.Format("向IP=【{0}:{1}】发送消息【{2}】准备发送。", m_sIP, m_iPort, _sCmd));
-                m_ClientSocket.SendTo(_byteSend, _byteSend.Length, SocketFlags.None, _EndPoint);//.Send(Encoding.UTF8.GetBytes(_sCmd));
-                Logger.Debug(string.Format("向IP=【{0}:{1}】发送消息【{2}】准备发送完成。进入接收。", m_sIP, m_iPort, _sCmd));
-
-
-                byte[] _buffer = new byte[1024];
-                EndPoint _EndPointRemote = new IPEndPoint(IPAddress.Any, 0) as EndPoint;
-                int _iReceiveCount = m_ClientSocket.ReceiveFrom(_buffer, ref _EndPointRemote);
-                IPEndPoint _ipEndPoint2 = ((IPEndPoint)_EndPointRemote);
-
-                string _sReturn = Encoding.UTF8.GetString(_buffer, 0, _iReceiveCount);
-                Logger.Debug(string.Format("向IP=【{0}:{1}】发送消息【{2}】成功。收到Server=【{3}:{4}】返回值【{5}】，。", m_sIP, m_iPort, _sCmd, _ipEndPoint2.Address.ToString(), _ipEndPoint2.Port, _sReturn));
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(string.Format("向IP=【{0}:{1}】发送消息【{2}】异常：{3}", m_sIP, m_iPort, _sCmd, ex.Message.ToString()));
-            }
-            finally
-            {
-                if (m_ClientSocket != null)
-                {
-                    m_ClientSocket.Close();
-                    m_ClientSocket.Dispose();
-                }
-            };
-        }
-
-        private static byte[] strToToHexByte(string hexString)
-        {
-            hexString = hexString.Replace(" ", "");
-            if ((hexString.Length % 2) != 0)
-                hexString += " ";
-            byte[] returnBytes = new byte[hexString.Length / 2];
-            for (int i = 0; i < returnBytes.Length; i++)
-                returnBytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2), 16);
-            return returnBytes;
-        }
-
+           
         private void btn_停止循环_Click(object sender, EventArgs e)
         {
             try
@@ -383,7 +360,7 @@ namespace CS_CDClient
             m_iPort = int.Parse(txt_端口.Text);
             m_bgw0.RunWorkerAsync();
             btn_启动桩.Enabled = false;
-            btn_停止充电.Enabled = true;
+            btn_停止充电.Enabled = true;  
         }
 
     }

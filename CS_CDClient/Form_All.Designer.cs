@@ -1,6 +1,6 @@
 ﻿namespace CS_CDClient
 {
-    partial class Form1
+    partial class Form_All
     {
         /// <summary>
         /// 必需的设计器变量。
@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.btn_单条发送 = new System.Windows.Forms.Button();
             this.btn_循环发送 = new System.Windows.Forms.Button();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
@@ -57,8 +56,6 @@
             this.btn_停止循环 = new System.Windows.Forms.Button();
             this.txt_线程数 = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.txt_Msg = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -68,18 +65,7 @@
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // btn_单条发送
-            // 
-            this.btn_单条发送.Location = new System.Drawing.Point(16, 15);
-            this.btn_单条发送.Name = "btn_单条发送";
-            this.btn_单条发送.Size = new System.Drawing.Size(107, 23);
-            this.btn_单条发送.TabIndex = 0;
-            this.btn_单条发送.Text = "单条发送(&S)";
-            this.btn_单条发送.UseVisualStyleBackColor = true;
-            this.btn_单条发送.Click += new System.EventHandler(this.btn_单条发送_Click);
             // 
             // btn_循环发送
             // 
@@ -96,7 +82,7 @@
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.richTextBox1.Location = new System.Drawing.Point(0, 0);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(1247, 269);
+            this.richTextBox1.Size = new System.Drawing.Size(1247, 70);
             this.richTextBox1.TabIndex = 2;
             this.richTextBox1.Text = "";
             // 
@@ -116,13 +102,12 @@
             this.splitContainer1.Panel1.Controls.Add(this.groupBox4);
             this.splitContainer1.Panel1.Controls.Add(this.groupBox3);
             this.splitContainer1.Panel1.Controls.Add(this.groupBox2);
-            this.splitContainer1.Panel1.Controls.Add(this.groupBox1);
             // 
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.richTextBox1);
             this.splitContainer1.Size = new System.Drawing.Size(1251, 477);
-            this.splitContainer1.SplitterDistance = 190;
+            this.splitContainer1.SplitterDistance = 389;
             this.splitContainer1.SplitterWidth = 14;
             this.splitContainer1.TabIndex = 3;
             // 
@@ -331,7 +316,7 @@
             this.txt_间隔.Name = "txt_间隔";
             this.txt_间隔.Size = new System.Drawing.Size(35, 21);
             this.txt_间隔.TabIndex = 6;
-            this.txt_间隔.Text = "100";
+            this.txt_间隔.Text = "1000";
             // 
             // label2
             // 
@@ -369,33 +354,14 @@
             this.label1.TabIndex = 4;
             this.label1.Text = "线程数";
             // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.btn_单条发送);
-            this.groupBox1.Controls.Add(this.txt_Msg);
-            this.groupBox1.Location = new System.Drawing.Point(10, 281);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(283, 38);
-            this.groupBox1.TabIndex = 5;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "单条发送";
-            // 
-            // txt_Msg
-            // 
-            this.txt_Msg.Location = new System.Drawing.Point(129, 15);
-            this.txt_Msg.Name = "txt_Msg";
-            this.txt_Msg.Size = new System.Drawing.Size(146, 21);
-            this.txt_Msg.TabIndex = 2;
-            this.txt_Msg.Text = "测试一下";
-            // 
-            // Form1
+            // Form_All
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1251, 477);
             this.Controls.Add(this.splitContainer1);
-            this.Name = "Form1";
-            this.Text = "单枪充电桩";
+            this.Name = "Form_All";
+            this.Text = "批量充电桩";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
@@ -410,24 +376,18 @@
             this.groupBox3.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
 
         }
 
         #endregion
-
-        private System.Windows.Forms.Button btn_单条发送;
         private System.Windows.Forms.Button btn_循环发送;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.TextBox txt_Msg;
         private System.Windows.Forms.TextBox txt_线程数;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Button btn_停止循环;
-        private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.TextBox txt_间隔;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.GroupBox groupBox3;

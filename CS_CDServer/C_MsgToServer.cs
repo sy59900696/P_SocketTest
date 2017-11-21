@@ -32,6 +32,8 @@ namespace StaticCode
 
         public string m_sCar = "";
 
+        public DateTime m_dtLastTime = DateTime.FromOADate(0);
+
         public C_MsgToClient m_MsgToClient = new C_MsgToClient();
 
         public C_MsgToServer()
@@ -53,6 +55,7 @@ namespace StaticCode
             _c1.m_iState = m_iState;
             _c1.m_sClientID = m_sClientID;
             _c1.m_sCar = m_sCar;
+            m_dtLastTime = DateTime.Now;
             return _c1;
         }
         public C_MsgToServer Copy(C_MsgToServer _c1)
@@ -60,6 +63,7 @@ namespace StaticCode
             m_iState = _c1.m_iState;
             m_sClientID = _c1.m_sClientID;
             m_sCar = _c1.m_sCar;
+            m_dtLastTime = DateTime.Now;
             return this;
         }
     }

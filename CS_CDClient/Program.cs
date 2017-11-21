@@ -17,7 +17,7 @@ namespace CS_CDClient
 
 
                 Application.EnableVisualStyles();
-                Application.Run(new Form1());
+                Application.Run(new Form_All());
                 Logger.Fatal("Main()执行完成。。。。。。。。。。。。。。。。。。。。。。");
             }
             catch (Exception ex)
