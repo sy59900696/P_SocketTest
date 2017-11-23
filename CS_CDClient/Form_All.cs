@@ -28,9 +28,9 @@ namespace CS_CDClient
         private int m_iCntError = 0;
 
         private C_MsgToServer m_MsgToServer1 = new C_MsgToServer();
-        private List<C_MsgToServer> m_lstMsgToServer1 = new List<C_MsgToServer>(); 
+        private List<C_MsgToServer> m_lstMsgToServer1 = new List<C_MsgToServer>();
 
-        bool m_Is用户点击了桩的停止键 = false; 
+        bool m_Is用户点击了桩的停止键 = false;
 
         private BackgroundWorker m_bgw0 = new BackgroundWorker();
 
@@ -92,6 +92,8 @@ namespace CS_CDClient
                     Logger.Debug(string.Format("M_bgw0_DoWork()循环异常：{0}", ex.Message.ToString()));
                 }
                 M_刷新桩界面();
+
+                GC.Collect();
                 Thread.Sleep(1000);
             }
         }
@@ -109,7 +111,7 @@ namespace CS_CDClient
         public void M_SendCmd(object _obj)
         {
             Socket _socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            _socket.ReceiveTimeout = 10000;
+            _socket.ReceiveTimeout = 5000;
             _socket.SendTimeout = 10000;
             C_MsgToServer _MsgToServer1 = _obj as C_MsgToServer;
             //string _sCmd = _obj.ToString();
@@ -119,6 +121,7 @@ namespace CS_CDClient
                 IPEndPoint _EndPoint = new IPEndPoint(IPAddress.Parse(m_sIP), m_iPort);
                 byte[] _byteSend = Encoding.UTF8.GetBytes(_MsgToServer1.ToString());
                 //M_Logger(string.Format("向IP=【{0}:{1}】发送消息【{2}】准备发送。", m_sIP, m_iPort, _sCmd));
+                DateTime _dtStart = DateTime.Now;
                 _socket.SendTo(_byteSend, _byteSend.Length, SocketFlags.None, _EndPoint);
                 Logger.Debug(string.Format("发送完成。进入接收。"));
 
@@ -127,8 +130,11 @@ namespace CS_CDClient
                 int _iReceiveCount = _socket.ReceiveFrom(_buffer, ref _EndPointRemote);
                 IPEndPoint _ipEndPoint2 = ((IPEndPoint)_EndPointRemote);
 
+                double _iSpan = (DateTime.Now - _dtStart).TotalSeconds;
+
                 string _sReturn = Encoding.UTF8.GetString(_buffer, 0, _iReceiveCount);
-                Logger.Debug(string.Format("向IP=【{0}:{1}】发送消息【{2}】成功。收到Server=【{3}:{4}】返回值【{5}】，。", m_sIP, m_iPort, _MsgToServer1.ToString(), _ipEndPoint2.Address.ToString(), _ipEndPoint2.Port, _sReturn));
+                Logger.Debug(string.Format("向IP=【{0}:{1}】发送消息【{2}】成功。收到Server=【{3}:{4}】返回值【{5}】，耗时{6}秒。", m_sIP, m_iPort, _MsgToServer1.ToString(), _ipEndPoint2.Address.ToString(), _ipEndPoint2.Port, _sReturn, _iSpan));
+                if (_iSpan > 5) Logger.Debug("-------------------------------------");
 
                 C_MsgToClient _msg2Client = JsonConvert.DeserializeObject<C_MsgToClient>(_sReturn);
                 Logger.Debug(string.Format("接收服务端=【{0}:{1}】\t解析OK", _ipEndPoint2.Address.ToString(), _ipEndPoint2.Port));
@@ -180,7 +186,7 @@ namespace CS_CDClient
         private bool M_Do自检()
         {
             bool _IsOk = true;
-            if ( m_iCount % 100 == 99) _IsOk = false;
+            if (m_iCount % 100 == 99) _IsOk = false;
             if (m_iCount > 50 && m_iCount < 100) _IsOk = false;
             Logger.Debug(_IsOk ? "自检成功。" : "自检发现故障。");
             Thread.Sleep(100);
@@ -223,7 +229,7 @@ namespace CS_CDClient
                 lbl_Msg2Client.Text = m_MsgToServer1.m_MsgToClient.ToString();
                 lbl_Msg2Server.Text = m_MsgToServer1.ToString();
             }));
-        } 
+        }
 
         private void btn_循环发送_Click(object sender, EventArgs e)
         {
@@ -310,10 +316,10 @@ namespace CS_CDClient
                     Logger.Debug(string.Format("M_bgw0_DoWork()循环异常：{0}", ex.Message.ToString()));
                 }
                 //M_刷新桩界面();
-                Thread.Sleep(1000);
+                Thread.Sleep(int.Parse(txt_间隔.Text));
             }
         }
-           
+
         private void btn_停止循环_Click(object sender, EventArgs e)
         {
             try
@@ -360,7 +366,7 @@ namespace CS_CDClient
             m_iPort = int.Parse(txt_端口.Text);
             m_bgw0.RunWorkerAsync();
             btn_启动桩.Enabled = false;
-            btn_停止充电.Enabled = true;  
+            btn_停止充电.Enabled = true;
         }
 
     }
